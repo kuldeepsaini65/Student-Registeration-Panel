@@ -13,6 +13,7 @@ All the details filled up by the user is saved in an DBMS file named < student_d
 
 '''
 
+from tkinter import ttk
 from tkinter import *
 from PIL import ImageTk,Image
 import sqlite3
@@ -20,7 +21,7 @@ import sqlite3
 def sql_connect():
     global cursor
     global connect
-    connect = sqlite3.connect("/student_data.db")
+    connect = sqlite3.connect("records/student_data.db")
     cursor = connect.cursor()
     cursor.execute("create table if not exists student_data(reg_id integer primary key AUTOINCREMENT, name TEXT, age integer ,gender text,course TEXT);")
     connect.commit()
@@ -34,49 +35,48 @@ def show_data():
     data_window.minsize(550,700)
 
 
-   
-    """
-    
-    Labels for name
+    data_heading = Label(data_window,text="Students Records", font="times 24",bg="lightblue")
+    data_heading.pack(pady=10,anchor="n",fill=X)
 
-    """
-
-    heading = Label(data_window, text="Student Records", bg="lightblue",font="times 18 bold")
-    heading.grid(row=0,column=0, columnspan=20,ipadx=189,ipady=10)
-    
-    
-    name = Label(data_window, text="Name" ,font="times 18 bold")
-    name.grid(row=1,column=0,ipadx=30,ipady=10)
-
-    age = Label(data_window, text="Age" ,font="times 18 bold")
-    age.grid(row=1,column=1,ipadx=30,ipady=10)
-
-    gender = Label(data_window, text="Gender" ,font="times 18 bold")
-    gender.grid(row=1,column=2,ipadx=30,ipady=10)
-
-    course1 = Label(data_window, text="Course" ,font="times 18 bold")
-    course1.grid(row=1,column=3,ipadx=30,ipady=10)
-    
+  
 
     cursor.execute("select * from student_data")
     connect.commit()
     data = cursor.fetchall()
-    count = 2
+    
+
+    _show_data_frame = Frame(data_window)
+    _show_data_frame.pack(pady=40)
+
+
+    _scrollbar = Scrollbar(_show_data_frame)
+    _scrollbar.pack(side=RIGHT,fill=Y)
+
+    tree_view = ttk.Treeview(_show_data_frame,selectmode="browse",yscrollcommand=_scrollbar.set)
+    
+    tree_view['columns'] = ("1","2","3","4","5")
+    tree_view['show'] = "headings"
+    tree_view.pack()
+
+    tree_view.column("1", width = 95, anchor ='n')
+    tree_view.column("2", width = 95, anchor ='n')
+    tree_view.column("3", width = 95, anchor ='n')
+    tree_view.column("4", width = 95, anchor ='n')
+    tree_view.column("5", width = 95, anchor ='n')
+
+
+    tree_view.heading("1", text ="ID")
+    tree_view.heading("2", text ="Name")
+    tree_view.heading("3", text ="Sex")
+    tree_view.heading("4", text ="Age")
+    tree_view.heading("5", text ="Course")
+
+
     for row in data:
+        tree_view.insert("", 'end',values =(row[0],row[1],row[2],row[3], row[4]))
 
-        name_label = Label(data_window, text=row[1],  font="times 14 ")
-        name_label.grid(row=count, column=0,pady=3)
+    _scrollbar.config(command=tree_view.yview)
 
-        age_label = Label(data_window, text=row[2],  font="times 14 ")
-        age_label.grid(row=count, column=1,pady=3)
-        
-        gender_label = Label(data_window, text=row[3],  font="times 14 ")
-        gender_label.grid(row=count, column=2,pady=3)
-        
-        course_label = Label(data_window, text=row[4],  font="times 14 ")
-        course_label.grid(row=count, column=3,pady=3)
-
-        count+=1
 
 
     data_window.mainloop()
@@ -86,6 +86,7 @@ def insert_data():
     age = store_age.get()
     gender = store_gender.get()
     course1 = course_value1.get()
+
     
 
     row_data = (name, age, gender, course1)
@@ -93,6 +94,9 @@ def insert_data():
     cursor.execute('insert into student_data(name, age, gender, course) values(?,?,?,?);',row_data)
     connect.commit()
     print("Data Inserted")
+
+
+
 
 
 root = Tk()
